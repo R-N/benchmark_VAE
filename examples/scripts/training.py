@@ -92,6 +92,11 @@ ap.add_argument(
     help="wandb entity name",
     default="benchmark_team",
 )
+ap.add_argument(
+    "--num_epochs",
+    help="override training epoch",
+    default=None,
+)
 
 args = ap.parse_args()
 
@@ -668,6 +673,9 @@ def main(args):
 
     else:
         training_config = BaseTrainerConfig.from_json_file(args.training_config)
+
+    if args.num_epochs:
+        training_config.num_epochs = args.num_epochs
 
     logger.info(f"Training config: {training_config}\n")
 
