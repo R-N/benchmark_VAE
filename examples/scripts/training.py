@@ -94,6 +94,7 @@ ap.add_argument(
 )
 ap.add_argument(
     "--num_epochs",
+    type=int,
     help="override training epoch",
     default=None,
 )
