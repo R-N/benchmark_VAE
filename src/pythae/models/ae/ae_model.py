@@ -60,6 +60,8 @@ class AE(BaseAE):
 
         self.set_encoder(encoder)
 
+        print("reconstruction_loss", self.model_config.reconstruction_loss)
+
     def forward(self, inputs: BaseDataset, **kwargs) -> ModelOutput:
         """The input data is encoded and decoded
 
