@@ -26,7 +26,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument(
     "--dataset",
     type=str,
-    default="mnist",
+    default="cifar10",
     choices=["mnist", "cifar10", "celeba"],
     help="The data set to use to perform training. It must be located in the folder 'data' at the "
     "path 'data/datset_name/' and contain a 'train_data.npz' and a 'eval_data.npz' file with the "
@@ -105,6 +105,12 @@ ap.add_argument(
     type=int,
     help="override training epoch",
     default=1000,
+)
+ap.add_argument(
+    "--fid_cache",
+    type=str,
+    help="FID cache",
+    default='./stats/cifar10.train.npz',
 )
 
 args = ap.parse_args()
@@ -724,7 +730,7 @@ def main(args):
         #training_config=BaseTrainerConfig(num_epochs=200), # TrainingConfig to use to fit the sampler
         training_config=training_config, # TrainingConfig to use to fit the sampler
     )
-    fid_cache = None
+    fid_cache = args.fid_cache
     IS, FID = get_inception_score_and_fid(
         generated_samples, fid_cache, verbose=True
     )
