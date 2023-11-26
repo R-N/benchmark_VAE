@@ -4,7 +4,7 @@ from typing import Optional
 import torch.nn.functional as F
 
 from ...data.datasets import BaseDataset
-from ..base import BaseAE
+from ..base import BaseAE, LOSSES
 from ..base.base_utils import ModelOutput
 from ..nn import BaseDecoder, BaseEncoder
 from ..nn.default_architectures import Encoder_AE_MLP
@@ -82,7 +82,8 @@ class AE(BaseAE):
         return output
 
     def loss_function(self, recon_x, x):
-        MSE = F.mse_loss(
+        loss_fn = LOSSES[self.model_config.reconstruction_loss]
+        MSE = loss_fn(
             recon_x.reshape(x.shape[0], -1), x.reshape(x.shape[0], -1), reduction="none"
         ).sum(dim=-1)
         return MSE.mean(dim=0)

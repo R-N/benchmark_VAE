@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 
 from ...data.datasets import BaseDataset
-from ..base import BaseAE
+from ..base import BaseAE, LOSSES
 from ..base.base_utils import ModelOutput
 from ..nn import BaseDecoder, BaseEncoder
 from ..nn.default_architectures import Encoder_VAE_MLP
@@ -97,19 +97,20 @@ class VAE(BaseAE):
         return output
 
     def loss_function(self, recon_x, x, mu, log_var, z):
-        if self.model_config.reconstruction_loss == "mse":
-            recon_loss = 0.5 * F.mse_loss(
-                recon_x.reshape(x.shape[0], -1),
-                x.reshape(x.shape[0], -1),
-                reduction="none",
-            ).sum(dim=-1)
-
-        elif self.model_config.reconstruction_loss == "bce":
+        if self.model_config.reconstruction_loss == "bce":
             recon_loss = F.binary_cross_entropy(
                 recon_x.reshape(x.shape[0], -1),
                 x.reshape(x.shape[0], -1),
                 reduction="none",
             ).sum(dim=-1)
+        else:
+            loss_fn = LOSSES[self.model_config.reconstruction_loss]
+            recon_loss = 0.5 * loss_fn(
+                recon_x.reshape(x.shape[0], -1),
+                x.reshape(x.shape[0], -1),
+                reduction="none",
+            ).sum(dim=-1)
+
 
         KLD = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp(), dim=-1)
 

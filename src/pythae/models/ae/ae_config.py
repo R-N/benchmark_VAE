@@ -13,4 +13,5 @@ class AEConfig(BaseAEConfig):
         latent_dim (int): The latent space dimension. Default: None.
         default_encoder (bool): Whether the encoder default. Default: True.
         default_decoder (bool): Whether the encoder default. Default: True.
+        reconstruction_loss (str): The reconstruction loss to use. Default: 'mse'
     """

@@ -118,6 +118,13 @@ ap.add_argument(
     help="Output dir",
     default='./output/',
 )
+ap.add_argument(
+    "--reconstruction_loss",
+    type=str,
+    help="override reconstruction_loss",
+    default=None,
+    choices=["bce", "mse", "mae", "mile", "mire"],
+)
 
 
 args = ap.parse_args()
@@ -698,6 +705,8 @@ def main(args):
 
     if args.num_epochs:
         training_config.num_epochs = args.num_epochs
+    if args.reconstruction_loss:
+        training_config.reconstruction_loss = args.reconstruction_loss
 
     logger.info(f"Training config: {training_config}\n")
 

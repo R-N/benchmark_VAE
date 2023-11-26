@@ -1,4 +1,5 @@
 from typing import Tuple, Union
+from typing_extensions import Literal
 
 from pydantic.dataclasses import dataclass
 
@@ -13,12 +14,15 @@ class BaseAEConfig(BaseConfig):
     Parameters:
         input_dim (tuple): The input_data dimension (channels X x_dim X y_dim)
         latent_dim (int): The latent space dimension. Default: None.
+        reconstruction_loss (str): The reconstruction loss to use. Default: 'mse'
     """
 
     input_dim: Union[Tuple[int, ...], None] = None
     latent_dim: int = 10
     uses_default_encoder: bool = True
     uses_default_decoder: bool = True
+
+    reconstruction_loss: Literal["bce", "mse", "mile", "mire", "mae"] = "mse"
 
 
 @dataclass
