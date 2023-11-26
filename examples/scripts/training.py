@@ -706,7 +706,7 @@ def main(args):
     if args.num_epochs:
         training_config.num_epochs = args.num_epochs
     if args.reconstruction_loss:
-        training_config.reconstruction_loss = args.reconstruction_loss
+        model_config.reconstruction_loss = args.reconstruction_loss
 
     logger.info(f"Training config: {training_config}\n")
 
