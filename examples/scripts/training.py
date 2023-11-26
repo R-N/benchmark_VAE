@@ -777,8 +777,10 @@ def main(s=None):
             df.hist()
         if "other_loss" in log_train.columns:
             log_train[["recon_loss", "other_loss"]].hist()
+            log_train[["recon_loss", "other_loss"]].plot()
         if "recon_grad" in log_train.columns:
             log_train[["recon_grad", "other_grad"]].hist()
+            log_train[["recon_grad", "other_grad"]].plot()
 
     """
     my_sampler_config = MAFSamplerConfig(
