@@ -782,7 +782,7 @@ def main(args):
     generated_samples = my_sampler.sample(
         num_samples=args.num_samples,
         batch_size=training_config.per_device_eval_batch_size,
-        output_dir=None,
+        output_dir=args.output_dir,
         return_gen=True
     )
     fid_cache = args.fid_cache
