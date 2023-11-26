@@ -100,6 +100,12 @@ ap.add_argument(
     help="override training epoch",
     default=None,
 )
+ap.add_argument(
+    "--num_samples",
+    type=int,
+    help="override training epoch",
+    default=1000,
+)
 
 args = ap.parse_args()
 
