@@ -157,9 +157,6 @@ class BaseTrainer:
 
         self.model = model
 
-        self.train_log = {}
-        self.eval_log = {}
-
     @property
     def is_main_process(self):
         if self.rank == 0 or self.rank == -1:
@@ -376,11 +373,15 @@ class BaseTrainer:
         self.optimizer.zero_grad()
         if "other_loss" in model_output:
             model_output.recon_loss.backward(retain_graph=True)
-            grad = get_gradients(self.model)
-            grad_norm = reduce_grad(grad)
-            model_output["recon_grad_norm"] = grad_norm
+            recon_grad = get_gradients(self.model)
+            other_grad = 0
             if model_output.other_loss is not None:
                 model_output.other_loss.backward()
+                other_grad = get_gradients(self.model) - recon_grad
+                other_grad = reduce_grad(other_grad).item()
+            recon_grad = reduce_grad(recon_grad).item()
+            model_output["recon_grad"] = recon_grad
+            model_output["other_grad"] = other_grad
         else:
             model_output.loss.backward()
         self.optimizer.step()
@@ -400,8 +401,10 @@ class BaseTrainer:
         # set random seed
         set_seed(self.training_config.seed)
 
-        self.train_log = {}
-        self.eval_log = {}
+        self.train_history = {}
+        self.eval_history = {}
+        self.train_values = {}
+        self.eval_values = {}
 
         # set optimizer
         self.set_optimizer()
@@ -609,7 +612,8 @@ class BaseTrainer:
             k: sum(v)/len(v)
             for k, v in eval_log.items()
         }
-        append_log(self.eval_log, mean_eval_log)
+        append_log(self.eval_history, mean_eval_log)
+        append_log(self.eval_values, eval_log)
 
         epoch_loss /= len(self.eval_loader)
 
@@ -668,7 +672,8 @@ class BaseTrainer:
             k: sum(v)/len(v)
             for k, v in train_log.items()
         }
-        append_log(self.train_log, mean_train_log)
+        append_log(self.train_history, mean_train_log)
+        append_log(self.train_values, train_log)
 
         # Allows model updates if needed
         if self.distributed:
@@ -702,24 +707,38 @@ class BaseTrainer:
         self.training_config.save_json(dir_path, "training_config")
 
         # save log
-        self.save_log(dir_path)
+        self.save_history(dir_path)
+        self.save_values(dir_path)
 
         self.callback_handler.on_save(self.training_config)
 
-    def get_log(self):
+    def get_history(self):
         log = {
-            **{f"{k}_train": v for k, v in self.train_log.items()},
-            **{f"{k}_val": v for k, v in self.eval_log.items()},
+            **{f"{k}_train": v for k, v in self.train_history.items()},
+            **{f"{k}_val": v for k, v in self.eval_history.items()},
         }
         df = pd.DataFrame.from_dict(log, orient='index')
         df = df.transpose()
         return df
 
-    def save_log(self, dir_path):
-        df = self.get_log()
-        df.to_csv(os.path.join(dir_path, "log.csv"))
+    def save_history(self, dir_path):
+        df = self.get_history()
+        df.to_csv(os.path.join(dir_path, "history.csv"))
         return df
-
+    
+    def get_values(self, val=False):
+        log = self.train_values if not val else self.eval_values
+        df = pd.DataFrame.from_dict(log, orient='index')
+        df = df.transpose()
+        return df
+    
+    def save_values(self, dir_path, val=None):
+        if val is None:
+            return self.save_values(dir_path, False), self.save_values(dir_path, True)
+        df = self.get_values(val=val)
+        name = "train" if not val else "eval"
+        df.to_csv(os.path.join(dir_path, f"values_{name}.csv"))
+        return df
 
     def save_checkpoint(self, model: BaseAE, dir_path, epoch: int):
         """Saves a checkpoint alowing to restart training from here
@@ -789,4 +808,7 @@ def append_log(log, model_output):
                 log[k] = []
             if hasattr(v, "item"):
                 v = v.item()
-            log[k].append(v)
+            if hasattr(v, "__iter__"):
+                log[k].extend(v)
+            else:
+                log[k].append(v)

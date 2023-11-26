@@ -760,15 +760,21 @@ def main(s=None):
     trainer = pipeline(train_data=train_data, eval_data=eval_data, callbacks=callbacks)
     
 
-    if hasattr(trainer, "get_log"):
-        log = trainer.get_log()
-        print(log.columns)
+    if hasattr(trainer, "get_history"):
+        log = trainer.get_history()
         if "recon_loss_train" in log.columns:
-            print("plotting recon")
             log[["recon_loss_train", "recon_loss_val"]].plot()
-        if "recon_grad_norm_train" in log.columns:
-            print("plotting grad")
-            log[["recon_grad_norm_train"]].plot()
+        if "recon_grad_train" in log.columns:
+            log[["recon_grad_train", "other_grad_train"]].plot()
+    if hasattr(trainer, "get_values"):
+        log_train, log_val = trainer.get_values()
+        if "recon_loss_train" in log_train.columns:
+            df = pd.DataFrame()
+            df["recon_loss_train"] = log_train["recon_loss"]
+            df["recon_loss_val"] = log_val["recon_loss"]
+            df.hist()
+        if "recon_grad_train" in log_train.columns:
+            log_train[["recon_grad_train", "other_grad_train"]].hist()
 
     """
     my_sampler_config = MAFSamplerConfig(
