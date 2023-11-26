@@ -139,8 +139,8 @@ def inject_training_config(training_config, args):
 def main(s=None):
 
     if isinstance(s, str):
-        s = [si.strip() for si in s.split(" ")]
-        s = [si for si in s if si]
+        s = [si.strip() for si in s.replace("\\", "").split(" ")]
+        s = [si.strip() for si in s if si]
 
     args = ap.parse_args(s)
 
