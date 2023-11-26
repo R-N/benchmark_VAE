@@ -695,7 +695,8 @@ class BaseTrainer:
             **{f"{k}_train": v for k, v in self.train_log.items()},
             **{f"{k}_val": v for k, v in self.eval_log.items()},
         }
-        df = pd.DataFrame(log)
+        df = pd.DataFrame.from_dict(log, orient='index')
+        df = df.transpose()
         return df
 
     def save_log(self, dir_path):
