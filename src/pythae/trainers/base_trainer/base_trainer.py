@@ -726,7 +726,9 @@ class BaseTrainer:
         df.to_csv(os.path.join(dir_path, "history.csv"))
         return df
     
-    def get_values(self, val=False):
+    def get_values(self, val=None):
+        if val is None:
+            return self.get_values(False), self.get_values(True)
         log = self.train_values if not val else self.eval_values
         df = pd.DataFrame.from_dict(log, orient='index')
         df = df.transpose()
