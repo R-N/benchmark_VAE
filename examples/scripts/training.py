@@ -129,6 +129,14 @@ ap.add_argument(
 
 args = ap.parse_args()
 
+def inject_model_config(model_config, args):
+    if args.reconstruction_loss:
+        model_config.reconstruction_loss = args.reconstruction_loss
+
+def inject_training_config(training_config, args):
+    if args.num_epochs:
+        training_config.num_epochs = args.num_epochs
+
 
 def main(args):
 
@@ -309,6 +317,7 @@ def main(args):
             model_config = AEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = AE(
             model_config=model_config,
@@ -326,6 +335,7 @@ def main(args):
             model_config = VAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = VAE(
             model_config=model_config,
@@ -343,6 +353,7 @@ def main(args):
             model_config = IWAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = IWAE(
             model_config=model_config,
@@ -360,6 +371,7 @@ def main(args):
             model_config = INFOVAE_MMD_Config()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = INFOVAE_MMD(
             model_config=model_config,
@@ -377,6 +389,7 @@ def main(args):
             model_config = WAE_MMD_Config()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = WAE_MMD(
             model_config=model_config,
@@ -394,6 +407,7 @@ def main(args):
             model_config = RAE_L2_Config()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = RAE_L2(
             model_config=model_config,
@@ -411,6 +425,7 @@ def main(args):
             model_config = RAE_GP_Config()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = RAE_GP(
             model_config=model_config,
@@ -428,6 +443,7 @@ def main(args):
             model_config = VAMPConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = VAMP(
             model_config=model_config,
@@ -445,6 +461,7 @@ def main(args):
             model_config = BetaVAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = BetaVAE(
             model_config=model_config,
@@ -462,6 +479,7 @@ def main(args):
             model_config = HVAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = HVAE(
             model_config=model_config,
@@ -479,6 +497,7 @@ def main(args):
             model_config = RHVAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = RHVAE(
             model_config=model_config,
@@ -496,6 +515,7 @@ def main(args):
             model_config = Adversarial_AE_Config()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = Adversarial_AE(
             model_config=model_config,
@@ -513,6 +533,7 @@ def main(args):
             model_config = VAEGANConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = VAEGAN(
             model_config=model_config,
@@ -531,6 +552,7 @@ def main(args):
             model_config = VQVAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = VQVAE(
             model_config=model_config,
@@ -548,6 +570,7 @@ def main(args):
             model_config = MSSSIM_VAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = MSSSIM_VAE(
             model_config=model_config,
@@ -565,6 +588,7 @@ def main(args):
             model_config = SVAE()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = SVAE(
             model_config=model_config,
@@ -582,6 +606,7 @@ def main(args):
             model_config = DisentangledBetaVAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = DisentangledBetaVAE(
             model_config=model_config,
@@ -599,6 +624,7 @@ def main(args):
             model_config = FactorVAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = FactorVAE(
             model_config=model_config,
@@ -616,6 +642,7 @@ def main(args):
             model_config = BetaTCVAEConfig()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = BetaTCVAE(
             model_config=model_config,
@@ -633,6 +660,7 @@ def main(args):
             model_config = VAE_IAF_Config()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = VAE_IAF(
             model_config=model_config,
@@ -650,6 +678,7 @@ def main(args):
             model_config = VAE_LinNF_Config()
 
         model_config.input_dim = data_input_dim
+        inject_model_config(model_config, args)
 
         model = VAE_LinNF(
             model_config=model_config,
@@ -703,10 +732,7 @@ def main(args):
     else:
         training_config = BaseTrainerConfig.from_json_file(args.training_config)
 
-    if args.num_epochs:
-        training_config.num_epochs = args.num_epochs
-    if args.reconstruction_loss:
-        model_config.reconstruction_loss = args.reconstruction_loss
+    inject_training_config(training_config, args)
 
     logger.info(f"Training config: {training_config}\n")
 
