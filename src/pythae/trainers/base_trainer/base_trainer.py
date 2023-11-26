@@ -770,6 +770,6 @@ def append_log(log, model_output):
         if v is not None and ("grad" in k or "loss" in k):
             if k not in log:
                 log[k] = []
-            if hasattr(v, item):
+            if hasattr(v, "item"):
                 v = v.item()
             log[k].append(v)
