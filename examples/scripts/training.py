@@ -6,7 +6,7 @@ import numpy as np
 from pytorch_gan_metrics import get_inception_score_and_fid
 
 from pythae.pipelines import TrainingPipeline, GenerationPipeline
-from pythae.samplers import MAFSamplerConfig
+from pythae.samplers import MAFSamplerConfig, NormalSampler
 from pythae.trainers import (
     AdversarialTrainerConfig,
     BaseTrainerConfig,
@@ -112,6 +112,13 @@ ap.add_argument(
     help="FID cache",
     default='./stats/cifar10.train.npz',
 )
+ap.add_argument(
+    "--output_dir",
+    type=str,
+    help="Output dir",
+    default='./output/',
+)
+
 
 args = ap.parse_args()
 
@@ -713,6 +720,7 @@ def main(args):
 
     pipeline(train_data=train_data, eval_data=eval_data, callbacks=callbacks)
 
+    """
     my_sampler_config = MAFSamplerConfig(
         n_made_blocks=2,
         n_hidden_in_made=3,
@@ -729,6 +737,18 @@ def main(args):
         eval_data=eval_data, # Needed to fit the sampler
         #training_config=BaseTrainerConfig(num_epochs=200), # TrainingConfig to use to fit the sampler
         training_config=training_config, # TrainingConfig to use to fit the sampler
+    )
+    """
+    # Define your sampler
+    my_sampler = NormalSampler(
+        model=model
+    )
+    # Generate samples
+    generated_samples = my_sampler.sample(
+        num_samples=args.num_samples,
+        batch_size=training_config.per_device_eval_batch_size,
+        output_dir=None,
+        return_gen=True
     )
     fid_cache = args.fid_cache
     IS, FID = get_inception_score_and_fid(
