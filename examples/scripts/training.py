@@ -762,15 +762,13 @@ def main(s=None):
 
     if hasattr(trainer, "get_log"):
         log = trainer.get_log()
-        print("plotting")
+        print(log.columns)
         if "recon_loss_train" in log.columns:
             print("plotting recon")
             log[["recon_loss_train", "recon_loss_val"]].plot()
-        if "grad_norm_train" in log.columns:
+        if "recon_grad_norm_train" in log.columns:
             print("plotting grad")
-            log[["grad_norm_train"]].plot()
-    else:
-        print("no get log")
+            log[["recon_grad_norm_train"]].plot()
 
     """
     my_sampler_config = MAFSamplerConfig(
