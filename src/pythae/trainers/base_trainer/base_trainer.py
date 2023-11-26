@@ -375,7 +375,7 @@ class BaseTrainer:
     def _optimizers_step(self, model_output=None):
         self.optimizer.zero_grad()
         if "other_loss" in model_output:
-            model_output.recon_loss.backward()
+            model_output.recon_loss.backward(retain_graph=True)
             grad = get_gradients(self.model)
             grad_norm = reduce_grad(grad)
             model_output["recon_grad_norm"] = grad_norm
