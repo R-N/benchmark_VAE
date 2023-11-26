@@ -569,6 +569,8 @@ class BaseTrainer:
 
         epoch_loss = 0
 
+        eval_log = {}
+
         with self.amp_context:
             for inputs in self.eval_loader:
                 inputs = self._set_inputs_to_device(inputs)
@@ -592,7 +594,7 @@ class BaseTrainer:
 
                 loss = model_output.loss
 
-                append_log(self.eval_log, model_output)
+                append_log(eval_log, model_output)
 
                 epoch_loss += loss.item()
 
@@ -602,6 +604,12 @@ class BaseTrainer:
                 self.callback_handler.on_eval_step_end(
                     training_config=self.training_config
                 )
+
+        mean_eval_log = {
+            k: sum(v)/len(v)
+            for k, v in eval_log.items()
+        }
+        append_log(self.eval_log, mean_eval_log)
 
         epoch_loss /= len(self.eval_loader)
 
@@ -628,6 +636,8 @@ class BaseTrainer:
 
         epoch_loss = 0
 
+        train_log = {}
+
         for inputs in self.train_loader:
             inputs = self._set_inputs_to_device(inputs)
 
@@ -641,7 +651,7 @@ class BaseTrainer:
 
             self._optimizers_step(model_output)
 
-            append_log(self.train_log, model_output)
+            append_log(train_log, model_output)
 
             loss = model_output.loss
 
@@ -653,6 +663,12 @@ class BaseTrainer:
             self.callback_handler.on_train_step_end(
                 training_config=self.training_config
             )
+
+        mean_train_log = {
+            k: sum(v)/len(v)
+            for k, v in train_log.items()
+        }
+        append_log(self.train_log, mean_train_log)
 
         # Allows model updates if needed
         if self.distributed:
