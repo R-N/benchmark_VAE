@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 from pytorch_gan_metrics import get_inception_score_and_fid
-
+import matplotlib.pyplot as plt
 from pythae.pipelines import TrainingPipeline, GenerationPipeline
 from pythae.samplers import MAFSamplerConfig, NormalSampler
 from pythae.trainers import (
@@ -775,6 +775,7 @@ def main(s=None):
             df.hist()
         if "recon_grad_train" in log_train.columns:
             log_train[["recon_grad_train", "other_grad_train"]].hist()
+    plt.show()
 
     """
     my_sampler_config = MAFSamplerConfig(
