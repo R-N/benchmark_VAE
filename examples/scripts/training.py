@@ -127,8 +127,6 @@ ap.add_argument(
 )
 
 
-args = ap.parse_args()
-
 def inject_model_config(model_config, args):
     if args.reconstruction_loss:
         model_config.reconstruction_loss = args.reconstruction_loss
@@ -138,7 +136,9 @@ def inject_training_config(training_config, args):
         training_config.num_epochs = args.num_epochs
 
 
-def main(args):
+def main(s=None):
+
+    args = ap.parse_args(s)
 
     if args.dataset == "mnist":
 
@@ -753,7 +753,20 @@ def main(args):
 
     pipeline = TrainingPipeline(training_config=training_config, model=model)
 
-    pipeline(train_data=train_data, eval_data=eval_data, callbacks=callbacks)
+    trainer = pipeline(train_data=train_data, eval_data=eval_data, callbacks=callbacks)
+    
+
+    if hasattr(trainer, "get_log"):
+        log = trainer.get_log()
+        print("plotting")
+        if "recon_loss_train" in log.columns:
+            print("plotting recon")
+            log[["recon_loss_train", "recon_loss_val"]].plot()
+        if "grad_norm_train" in log.columns:
+            print("plotting grad")
+            log[["grad_norm_train"]].plot()
+    else:
+        print("no get log")
 
     """
     my_sampler_config = MAFSamplerConfig(
@@ -797,5 +810,4 @@ def main(args):
     )
 
 if __name__ == "__main__":
-
-    main(args)
+    main()
