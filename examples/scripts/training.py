@@ -764,6 +764,7 @@ def main(s=None):
         log = trainer.get_history()
         if "recon_loss_train" in log.columns:
             log[["recon_loss_train", "recon_loss_val"]].plot()
+            log[["recon_loss_train", "other_loss_train"]].plot()
         if "recon_grad_train" in log.columns:
             log[["recon_grad_train", "other_grad_train"]].plot()
     if hasattr(trainer, "get_values"):
@@ -773,6 +774,7 @@ def main(s=None):
             df["recon_loss_train"] = log_train["recon_loss"]
             df["recon_loss_val"] = log_val["recon_loss"]
             df.hist()
+            log_train[["recon_loss", "other_loss"]].hist()
         if "recon_grad" in log_train.columns:
             log_train[["recon_grad", "other_grad"]].hist()
 
