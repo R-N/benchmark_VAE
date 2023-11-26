@@ -3,8 +3,10 @@ import logging
 import os
 
 import numpy as np
+from pytorch_gan_metrics import get_inception_score_and_fid
 
-from pythae.pipelines import TrainingPipeline
+from pythae.pipelines import TrainingPipeline, GenerationPipeline
+from pythae.samplers import MAFSamplerConfig
 from pythae.trainers import (
     AdversarialTrainerConfig,
     BaseTrainerConfig,
@@ -699,6 +701,33 @@ def main(args):
 
     pipeline(train_data=train_data, eval_data=eval_data, callbacks=callbacks)
 
+    my_sampler_config = MAFSamplerConfig(
+        n_made_blocks=2,
+        n_hidden_in_made=3,
+        hidden_size=128
+    )
+    pipe = GenerationPipeline(
+        model=model,
+        sampler_config=my_sampler_config
+    )
+    generated_samples = pipe(
+        num_samples=args.num_samples,
+        return_gen=True, # If false returns nothing
+        train_data=train_data, # Needed to fit the sampler
+        eval_data=eval_data, # Needed to fit the sampler
+        #training_config=BaseTrainerConfig(num_epochs=200), # TrainingConfig to use to fit the sampler
+        training_config=training_config, # TrainingConfig to use to fit the sampler
+    )
+    fid_cache = None
+    IS, FID = get_inception_score_and_fid(
+        generated_samples, fid_cache, verbose=True
+    )
+    print(
+        "Inception Score: %.3f(%.5f), "
+        "FID: %6.3f" % (
+            IS[0], IS[1], FID
+        )
+    )
 
 if __name__ == "__main__":
 
