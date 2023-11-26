@@ -692,8 +692,8 @@ class BaseTrainer:
 
     def get_log(self):
         log = {
-            **{f"{k}_train": v for k, v in self.train_log.items()}
-            **{f"{k}_val": v for k, v in self.eval_log.items()}
+            **{f"{k}_train": v for k, v in self.train_log.items()},
+            **{f"{k}_val": v for k, v in self.eval_log.items()},
         }
         df = pd.DataFrame(log)
         return df
