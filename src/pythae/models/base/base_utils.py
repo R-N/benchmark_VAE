@@ -67,3 +67,20 @@ class CPU_Unpickler(pickle.Unpickler):
             return lambda b: torch.load(io.BytesIO(b), map_location="cpu")
         else:
             return super().find_class(module, name)
+
+def get_gradients(self):
+    grads = []
+    for param in self.parameters():
+        if param.grad is not None:
+            grad = param.grad
+        else:
+            grad = torch.zeros(param.shape, dtype=param.dtype, device=param.device)
+        grads.append(grad.view(-1))
+    grads = torch.cat(grads).clone()
+    return grads
+
+def reduce_grad(grad):
+    grad = grad.norm(2, dim=-1)
+    if grad.dim() > 0:
+        grad = grad.sum(dim=0)
+    return grad

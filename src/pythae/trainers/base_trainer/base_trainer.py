@@ -13,10 +13,12 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
 
+import pandas as pd
+
 from ...customexception import ModelError
 from ...data.datasets import BaseDataset, collate_dataset_output
 from ...models import BaseAE
-from ..trainer_utils import set_seed
+from ..trainer_utils import set_seed, get_gradients, reduce_grad
 from ..training_callbacks import (
     CallbackHandler,
     MetricConsolePrinterCallback,
@@ -154,6 +156,9 @@ class BaseTrainer:
             logger.info("Model passed sanity check !\n" "Ready for training.\n")
 
         self.model = model
+
+        self.train_log = {}
+        self.eval_log = {}
 
     @property
     def is_main_process(self):
@@ -368,10 +373,16 @@ class BaseTrainer:
         return inputs_on_device
 
     def _optimizers_step(self, model_output=None):
-        loss = model_output.loss
-
         self.optimizer.zero_grad()
-        loss.backward()
+        if "other_loss" in model_output:
+            model_output.recon_loss.backward()
+            grad = get_gradients(self.model)
+            grad_norm = reduce_grad(grad)
+            model_output["recon_grad_norm"] = grad_norm
+            if model_output.other_loss is not None:
+                model_output.other_loss.backward()
+        else:
+            model_output.loss.backward()
         self.optimizer.step()
 
     def _schedulers_step(self, metrics=None):
@@ -388,6 +399,9 @@ class BaseTrainer:
         """Sets up the trainer for training"""
         # set random seed
         set_seed(self.training_config.seed)
+
+        self.train_log = {}
+        self.eval_log = {}
 
         # set optimizer
         self.set_optimizer()
@@ -578,6 +592,8 @@ class BaseTrainer:
 
                 loss = model_output.loss
 
+                append_log(self.eval_log, model_output)
+
                 epoch_loss += loss.item()
 
                 if epoch_loss != epoch_loss:
@@ -625,6 +641,8 @@ class BaseTrainer:
 
             self._optimizers_step(model_output)
 
+            append_log(self.train_log, model_output)
+
             loss = model_output.loss
 
             epoch_loss += loss.item()
@@ -667,7 +685,24 @@ class BaseTrainer:
         # save training config
         self.training_config.save_json(dir_path, "training_config")
 
+        # save log
+        self.save_log(dir_path)
+
         self.callback_handler.on_save(self.training_config)
+
+    def get_log(self):
+        log = {
+            **{f"{k}_train": v for k, v in self.train_log.items()}
+            **{f"{k}_val": v for k, v in self.eval_log.items()}
+        }
+        df = pd.DataFrame(log)
+        return df
+
+    def save_log(self, dir_path):
+        df = self.get_log()
+        df.to_csv(os.path.join(dir_path, "log.csv"))
+        return df
+
 
     def save_checkpoint(self, model: BaseAE, dir_path, epoch: int):
         """Saves a checkpoint alowing to restart training from here
@@ -729,3 +764,12 @@ class BaseTrainer:
             reconstructions,
             normal_generation,
         )
+
+def append_log(log, model_output):
+    for k, v in model_output.items():
+        if v is not None and ("grad" in k or "loss" in k):
+            if k not in log:
+                log[k] = []
+            if hasattr(v, item):
+                v = v.item()
+            log[k].append(v)

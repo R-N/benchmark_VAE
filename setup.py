@@ -37,6 +37,7 @@ setup(
         "typing_extensions",
         "dataclasses>=0.6",
         "pytorch_gan_metrics",
+        "pandas",
     ],
     extras_require={':python_version == "3.7.*"': ["pickle5"]},
     python_requires=">=3.7",

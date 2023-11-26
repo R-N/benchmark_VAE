@@ -91,6 +91,7 @@ class VAE(BaseAE):
         output = ModelOutput(
             recon_loss=recon_loss,
             reg_loss=kld,
+            other_loss=kld,
             loss=loss,
             recon_x=recon_x,
             z=z,

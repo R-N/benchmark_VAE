@@ -79,7 +79,7 @@ class AE(BaseAE):
 
         loss = self.loss_function(recon_x, x)
 
-        output = ModelOutput(loss=loss, recon_x=recon_x, z=z)
+        output = ModelOutput(loss=loss, recon_x=recon_x, z=z, recon_loss=loss, other_loss=None, reg_loss=None)
 
         return output
 
